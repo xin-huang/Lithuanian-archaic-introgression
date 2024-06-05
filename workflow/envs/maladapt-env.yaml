@@ -1,0 +1,8 @@
+name: maladapt
+channels:
+    - conda-forge
+    - bioconda
+dependencies:
+    - msprime=0.7.0
+    - pyslim=0.401
+    - tskit=0.1.5
