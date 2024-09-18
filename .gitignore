@@ -1,0 +1,11 @@
+.snakemake/*
+logs/*
+logs_slurm/*
+resources/data/*
+resources/tools/*
+resources/flags/*
+resources/models/maladapt/*.sav
+resources/repeats/*.bed
+results/*
+*.out
+*.sh
