@@ -88,38 +88,6 @@ rule download_betascan:
         """
 
 
-rule download_maladapt:
-    input:
-    output:
-        download_flag = "resources/flags/.maladapt.downloaded",
-    params:
-        dir = "resources/tools/",
-    shell:
-        """
-        mkdir -p {params.dir}
-        cd {params.dir}
-        git clone https://github.com/xzhang-popgen/maladapt
-        cd ../../
-        touch {output.download_flag}
-        """
-
-
-rule download_genomatnn:
-    input:
-    output:
-        download_flag = "resources/flags/.genomatnn.downloaded",
-    params:
-        dir = "resources/tools/",
-    shell:
-        """
-        mkdir -p {params.dir}
-        cd {params.dir}
-        git clone https://github.com/grahamgower/genomatnn
-        cd ../../
-        touch {output.download_flag}
-        """
-
-
 rule download_beagle:
     input:
     output:

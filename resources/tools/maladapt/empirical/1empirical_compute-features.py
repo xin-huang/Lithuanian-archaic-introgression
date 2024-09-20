@@ -1,10 +1,13 @@
 # This file is modified based on the script from
 # https://github.com/xzhang-popgen/maladapt/blob/main/empirical/1empirical_compute-features.py
 # Several parameters were originally hard-coded and have now been adjusted
+# EOF errors were fixed in get_vcf_modern and get_vcf_archaic
+
 
 import msprime, pyslim, os, random, itertools,argparse,gzip
 import numpy as np
 import traceback
+
 
 parser = argparse.ArgumentParser(description="A script for computing summary statistics in 50kb windows across given chromosome, between modern human and archaic human.")
 parser.add_argument('-c', '--chr', action="store", dest="chr_id",
@@ -13,13 +16,39 @@ parser.add_argument('-c', '--chr', action="store", dest="chr_id",
 parser.add_argument('-p', '--pop', action="store", dest="pop_id",
                         help="which non-YRI 1000G population: 'BEB','CHB' etc, default: 'BEB'",
                         default=1, type=int)
-                        
+ 
+# Directory arguments
+parser.add_argument('--vcfm', action="store", dest="DIR_vcfm",
+                    help="Directory for modern VCF output files",
+                    default="results/maladapt/vcf_modern_out/")
+parser.add_argument('--vcfa', action="store", dest="DIR_vcfa",
+                    help="Directory for archaic VCF output files",
+                    default="results/maladapt/vcf_archaic_out/")
+parser.add_argument('--dir-pop', action="store", dest="DIR_pop",
+                    help="Directory for population files",
+                    default="results/maladapt/dir_pop/")
+parser.add_argument('--out', action="store", dest="DIR_out",
+                    help="Directory for output files",
+                    default="results/maladapt/dir_out/")
+parser.add_argument('--stat', action="store", dest="DIR_stat",
+                    help="Directory for statistical output files",
+                    default="results/maladapt/dir_stat_out/")
+parser.add_argument('--archaic', action="store", dest="DIR_archaic",
+                    help="Directory for archaic input files",
+                    default="results/maladapt/vcf_archaic/")
+parser.add_argument('--1000g', action="store", dest="DIR_1000g",
+                    help="Directory for 1000G input files",
+                    default="results/maladapt/vcf_modern/")
+parser.add_argument('--range', action="store", dest="file_range",
+                    help="File containing window range custom data",
+                    default="results/maladapt/window_range_custom/CHR6_windows_overlap.txt")
+
 args = parser.parse_args()
 
 allpop = ['CHB','KHV','GIH','PJL','CHS','CEU','GBR','IBS','PEL','TSI','JPT','CDX','FIN','MXL','PUR','CLM','BEB','STU','ITU', 'LIT']
 
 chrom = args.chr_id
-population = allpop[args.pop_id-1]
+population = allpop[args.pop_id - 1]
 
 #hardcoded population LIT
 population = 'LIT'
@@ -27,20 +56,47 @@ population = 'LIT'
 print(chrom)
 print(population)
 
-DIR_vcfm = "results/maladapt/vcf_modern_out/"
-DIR_vcfa = "results/maladapt/vcf_archaic_out/"
+DIR_vcfm = args.DIR_vcfm
+DIR_vcfa = args.DIR_vcfa
+DIR_pop = args.DIR_pop
+DIR_out = args.DIR_out
+DIR_stat = args.DIR_stat
+DIR_archaic = args.DIR_archaic
+DIR_1000g = args.DIR_1000g
+file_range = args.file_range
 
-DIR_pop = "results/maladapt/dir_pop/"
-DIR_out = "results/maladapt/dir_out/"
-DIR_stat = "results/maladapt/dir_stat_out/"
+print("Directories and file paths:")
+print(f"Modern VCF Directory: {DIR_vcfm}")
+print(f"Archaic VCF Directory: {DIR_vcfa}")
+print(f"Population Directory: {DIR_pop}")
+print(f"Output Directory: {DIR_out}")
+print(f"Stat Directory: {DIR_stat}")
+print(f"Archaic Directory: {DIR_archaic}")
+print(f"1000G Directory: {DIR_1000g}")
+print(f"File Range: {file_range}")
+
+os.makedirs(DIR_vcfm, exist_ok=True)
+os.makedirs(DIR_vcfa, exist_ok=True)
+os.makedirs(DIR_pop, exist_ok=True)
+os.makedirs(DIR_out, exist_ok=True)
+os.makedirs(DIR_stat, exist_ok=True)
+os.makedirs(DIR_archaic, exist_ok=True)
+os.makedirs(DIR_1000g, exist_ok=True)
+
+#DIR_vcfm = "results/maladapt/vcf_modern_out/"
+#DIR_vcfa = "results/maladapt/vcf_archaic_out/"
+
+#DIR_pop = "results/maladapt/dir_pop/"
+#DIR_out = "results/maladapt/dir_out/"
+#DIR_stat = "results/maladapt/dir_stat_out/"
 
 #archaic infolder
-DIR_archaic = "results/maladapt/vcf_archaic/"
+#DIR_archaic = "results/maladapt/vcf_archaic/"
 
-file_range = "results/maladapt/window_range_custom/CHR"+str(chrom)+"_windows_overlap.txt"
+#file_range = "results/maladapt/window_range_custom/CHR"+str(chrom)+"_windows_overlap.txt"
 
 #modern infolder
-DIR_1000g = "results/maladapt/vcf_modern/"
+#DIR_1000g = "results/maladapt/vcf_modern/"
 
 #original pre- and suffixes - not used
 file_prefix_1000g = "ALL.chr"
@@ -105,6 +161,7 @@ def get_vcf_modern (chromosome,region_start,region_end,outname):
         vcf_qual = 100
     while vcf_pos < int(region_start):
         vcf_line = vf.readline()
+        if vcf_line == '': break
         vcf_line_split = vcf_line.split()
         vcf_pos = vcf_line_split[1]
         vcf_pos = int(vcf_pos)
@@ -120,6 +177,7 @@ def get_vcf_modern (chromosome,region_start,region_end,outname):
         if (len(vcf_ref)==1) & (len(vcf_alt)==1) & (vcf_qual>=40):
             out.write(vcf_line)
         vcf_line = vf.readline()
+        if vcf_line == '': break
         vcf_line_split = vcf_line.split()
         vcf_ref = vcf_line_split[3]
         vcf_alt = vcf_line_split[4]
@@ -163,6 +221,7 @@ def get_vcf_archaic (chromosome,region_start,region_end,outname):
     vcf_filter = vcf_line_split[6]
     while vcf_pos < int(region_start):
         vcf_line = vf.readline()
+        if vcf_line == '': break # EOF
         vcf_line_split = vcf_line.split()
         vcf_pos = vcf_line_split[1]
         vcf_pos = int(vcf_pos)
@@ -177,6 +236,7 @@ def get_vcf_archaic (chromosome,region_start,region_end,outname):
         if (len(vcf_ref)==1) & (len(vcf_alt)==1) & (vcf_qual>=100) & (vcf_filter == "."):
             out.write(vcf_line)
         vcf_line = vf.readline()
+        if vcf_line == '': break # EOF
         vcf_line_split = vcf_line.split()
         vcf_ref = vcf_line_split[3]
         vcf_alt = vcf_line_split[4]

@@ -15,3 +15,17 @@
 # along with this program. If not, please see
 #
 #    https://www.gnu.org/licenses/gpl-3.0.en.html
+
+
+rule plot_betascan_results:
+    input:
+        scores = rules.estimate_b1.output.scores,
+    output:
+        plot = "results/plots/b1.scores.pdf",
+    params:
+        cutoff1 = 71.572528,
+        cutoff2 = 30.589559,
+    shell:
+        """
+        Rscript workflow/scripts/manhattan.R {input.scores} {output.plot} {params.cutoff1} {params.cutoff2}
+        """

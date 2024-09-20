@@ -66,39 +66,92 @@ rule create_stepsize_file:
         """
 
 
+rule split_stepsize_file:
+    input:
+        stepsize_file = rules.create_stepsize_file.output.stepsize_file,
+    output:
+        expand("results/maladapt/window_range_custom/CHR6_windows_overlap_{n}.txt", n = range(1, 1001))
+    params:
+        output_dir = "results/maladapt/window_range_custom/",
+        output_prefix = "CHR6_windows_overlap",
+        nfiles = 1000,
+    script:
+        "../scripts/split_window_ranges.py"
+
+
 rule get_sample_names:
     input:
         yri_samples = rules.extract_yoruba_eur_samples.output.yri_samples,
         lit_vcf = rules.beagle_imputation_with_ref.output.vcf,
+        archaic_vcf = rules.download_nea_genome.output.vcf,
     output:
         yri_samples = "results/maladapt/dir_pop/YRI.txt",
         lit_samples = "results/maladapt/dir_pop/LIT.txt",
+    params:
+        vcf_archaic = "results/maladapt/vcf_archaic/",
     shell:
         """
         cp {input.yri_samples} {output.yri_samples}
         bcftools query -l {input.lit_vcf} > {output.lit_samples}
+        mkdir -p {params.vcf_archaic}
+        cp {input.archaic_vcf} {params.vcf_archaic}
         """
 
 
 rule run_maladapt_feature_extraction:
     input:
         merged_vcf = rules.merge_lit_yri.output.vcf,
-        archaic_vcf = rules.download_nea_genome.output.vcf,
         yri_samples = rules.get_sample_names.output.yri_samples,
         lit_samples = rules.get_sample_names.output.lit_samples,
-        overlap = rules.create_stepsize_file.output.stepsize_file,
+        overlap = "results/maladapt/window_range_custom/CHR6_windows_overlap_{n}.txt",
     output:
-        feature = "results/maladapt/dir_stat_out/6window_nea_LIT.txt",
+        feature = "results/maladapt/dir_stat_out_{n}/6window_nea_LIT.txt",
+    params:
+        dir_stat_out = "results/maladapt/dir_stat_out_{n}/",
+        dir_out = "results/maladapt/dir_out_{n}/",
+        vcf_modern_out = "results/maladapt/vcf_modern_out_{n}/",
+        vcf_archaic_out = "results/maladapt/vcf_archaic_out_{n}/",
+        script = "resources/tools/maladapt/empirical/1empirical_compute-features.py",
     resources:
-        time = 43200, mem_gb = 100, partition = 'basic',    
+        mem_gb = lambda wildcards: 32 if (int(wildcards.n) < 175) or (int(wildcards.n) > 195) else 1000, 
+        partition = lambda wildcards: "short" if (int(wildcards.n) < 175) or (int(wildcards.n) > 195) else "himem",
+        time = lambda wildcards: 360 if (int(wildcards.n) < 175) or (int(wildcards.n) > 195) else 1440,
     conda: "../envs/maladapt-env.yaml",
     shell:
         """
-        mkdir -p results/maladapt/dir_stat_out
-        mkdir -p results/maladapt/dir_out
-        mkdir -p results/maladapt/vcf_modern_out
-        mkdir -p results/maladapt/vcf_archaic_out
-        mkdir -p results/maladapt/vcf_archaic
-        cp {input.archaic_vcf} results/maladapt/vcf_archaic/
-        python workflow/scripts/1empirical_compute-features_custom_chr6_final.py
+        python {params.script} --vcfm {params.vcf_modern_out} --vcfa {params.vcf_archaic_out} --out {params.dir_out} --stat {params.dir_stat_out} --range {input.overlap}
+        """
+
+
+rule merge_maladapt_features:
+    input:
+        expand("results/maladapt/dir_stat_out_{n}/6window_nea_LIT.txt", n=range(1,1001)),
+    output:
+        features = "results/maladapt/6window_nea_LIT.txt",
+    shell:
+        """
+        head -1 results/maladapt/dir_stat_out_1/6window_nea_LIT.txt > {output.features}
+        cat {input} | grep -v chr >> {output.features}
+        rm -r results/maladapt/dir_stat_out_*
+        rm -r results/maladapt/dir_out_*
+        rm -r results/maladapt/vcf_modern_out_*
+        rm -r results/maladapt/vcf_archaic_out_*
+        """
+
+
+rule run_maladapt_prediction:
+    input:
+        features = rules.merge_maladapt_features.output.features,
+    output:
+        predictions = "results/maladapt/6window_nea_LIT.predictions",
+    params:
+        model = "resources/tools/maladapt/pretrained_models/MaLAdapt_25_-sweep-all_model-001.sav",
+        feature_config = "resources/tools/maladapt/feature/set6-all.txt",
+        script = "resources/tools/maladapt/empirical/3empirical_prediction.py",
+    resources:
+        mem_gb = 1000,
+    conda: "../envs/maladapt-env.yaml",
+    shell:
+        """
+        python {params.script} --input {input.features} --output {output.predictions} --model {params.model} --feature {params.feature_config}
         """
