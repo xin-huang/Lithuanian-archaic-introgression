@@ -22,7 +22,8 @@
 
 rule all:
     input:
-        "results/maladapt/dir_stat_out/6window_nea_LIT.txt",
+        "results/plots/b1.scores.pdf",
+        "results/plots/maladapt_histogram.pdf",
 
 
 ##### Modules #####
@@ -31,6 +32,6 @@ rule all:
 include: "rules/download.smk"
 include: "rules/preprocess.smk"
 include: "rules/run_betascan.smk"
-include: "rules/run_genomatnn.smk"
 include: "rules/run_maladapt.smk"
-include: "rules/plot.smk"
+include: "rules/plot_betascan_results.smk"
+include: "rules/plot_maladapt_results.smk"
