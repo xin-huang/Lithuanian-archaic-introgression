@@ -36,25 +36,6 @@ rule merge_lit_yri:
         """
 
 
-rule merge_lit_yri_nea:
-    input:
-        vcf1 = rules.merge_lit_yri.output.vcf,
-        vcf2 = rules.download_nea_genome.output.vcf,
-    output:
-        vcf = "results/maladapt/merged_6_output_with_nea.vcf.gz",
-    shell:
-        """
-        bcftools isec -n=2 -p dir {input.vcf1} {input.vcf2}
-        bgzip -c dir/0000.vcf > dir/0000.vcf.gz
-        tabix -p vcf dir/0000.vcf.gz
-        bgzip -c dir/0001.vcf > dir/0001.vcf.gz
-        tabix -p vcf dir/0001.vcf.gz
-        bcftools merge -Oz -o {output.vcf} dir/0000.vcf.gz dir/0001.vcf.gz
-        tabix -p vcf {output.vcf}
-        rm -r dir
-        """
-
-
 rule create_stepsize_file:
     input:
         vcf = rules.merge_lit_yri.output.vcf,
@@ -142,6 +123,7 @@ rule merge_maladapt_features:
 rule run_maladapt_prediction:
     input:
         features = rules.merge_maladapt_features.output.features,
+        flag = rules.download_maladapt_pretrained_model.output.download_flag,
     output:
         predictions = "results/maladapt/6window_nea_LIT.predictions",
     params:
@@ -149,7 +131,7 @@ rule run_maladapt_prediction:
         feature_config = "resources/tools/maladapt/feature/set6-all.txt",
         script = "resources/tools/maladapt/empirical/3empirical_prediction.py",
     resources:
-        mem_gb = 1000,
+        mem_gb = 128,
     conda: "../envs/maladapt-env.yaml",
     shell:
         """

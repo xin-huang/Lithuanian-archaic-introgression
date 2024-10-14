@@ -102,3 +102,20 @@ rule download_beagle:
         cd ../../../
         touch {output.download_flag}
         """
+
+
+rule download_maladapt_pretrained_model:
+    input:
+    output:
+        download_flag = "resources/flags/.maladapt.pretrained.model.downloaded",
+    params:
+        dir = "resources/tools/maladapt/pretrained_models/",
+    shell:
+        """
+        cd {params.dir}
+        git clone https://huggingface.co/xin-huang/Lithuanian-archaic-introgression
+        mv Lithuanian-archaic-introgression/MaLAdapt_25_-sweep-all_model-001.sav .
+        rm -rf Lithuanian-archaic-introgression
+        cd ../../../../
+        touch {output.download_flag}
+        """

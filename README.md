@@ -46,12 +46,16 @@ Users should adjust the resource parameters in each Snakemake file to match thei
 
 ## Results
 
-Distribution of adaptive introgression probabilities on chromosome 6 in Lithuanian genomes using ![MaLAdapt](expected_results/plots/maladapt_histogram.pdf) (Zhang et al. 2023)
+Distribution of adaptive introgression probabilities on chromosome 6 in Lithuanian genomes using MaLAdapt (Zhang et al. 2023).
 
-Manhattan plot of B1 scores on chromosome 6 in Lithuanian genomes using ![BetaScan](expected_results/plots/b1.scores.pdf) (Siewert and Voight 2017)
+![MaLAdapt](expected_results/plots/maladapt_histogram.png)
+
+Manhattan plot of B1 scores on chromosome 6 in Lithuanian genomes using BetaScan (Siewert and Voight 2017).
+
+![BetaScan](expected_results/plots/b1.scores.png)
 
 ## References
 
-Siewert and Voight. 2017. *Mol Biol Evol* **34**: 2996–3005.
+- Siewert and Voight. 2017. *Mol Biol Evol* **34**: 2996–3005.
 
-Zhang et al. 2023. *Mol Biol Evol* **40**: msad001.
+- Zhang et al. 2023. *Mol Biol Evol* **40**: msad001.

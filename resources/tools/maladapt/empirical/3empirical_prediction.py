@@ -2,6 +2,7 @@
 # https://github.com/xzhang-popgen/maladapt/blob/main/empirical/3empirical_prediction.py
 # Several parameters were originally hard-coded and have now been adjusted
 # Unused matplotlib and seaborn are removed
+# Permission to redistribute this code has been granted by the original developer, Prof. Xinjun Zhang
 
 
 import pandas as pd
