@@ -2,6 +2,7 @@
 # https://github.com/xzhang-popgen/maladapt/blob/main/empirical/1empirical_compute-features.py
 # Several parameters were originally hard-coded and have now been adjusted
 # EOF errors were fixed in get_vcf_modern and get_vcf_archaic
+# Permission to redistribute this code has been granted by the original developer, Prof. Xinjun Zhang
 
 
 import msprime, pyslim, os, random, itertools,argparse,gzip
