@@ -1,5 +1,5 @@
 [![license](https://img.shields.io/badge/license-GPL%20v3-black.svg?style=flat-square)](LICENSE)
-[![build Status](https://img.shields.io/github/actions/workflow/status/xin-huang/Lithuanian-archaic-introgression/build.yaml?branch=main&style=flat-square)](https://github.com/xin-huang/Lithuanian-archaic-introgression/actions)
+[![build Status](https://img.shields.io/github/actions/workflow/status/xin-huang/Lithuanian-archaic-introgression/dry-run.yaml?branch=main&style=flat-square&label=dry-run)](https://github.com/xin-huang/Lithuanian-archaic-introgression/actions)
 
 # Lithuanian-archaic-introgression
 
