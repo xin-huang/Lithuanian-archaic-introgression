@@ -23,8 +23,9 @@
 
 rule all:
     input:
-        "results/plots/b1.scores.pdf",
+        "results/plots/b1.scores.png",
         "results/plots/maladapt_histogram.pdf",
+        "results/betascan/lit.chr6.imputed.biallelic.snps.b1.scores.summary",
 
 
 ##### Modules #####

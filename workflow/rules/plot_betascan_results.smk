@@ -22,10 +22,10 @@ rule plot_betascan_results:
     input:
         scores = rules.estimate_b1.output.scores,
     output:
-        plot = "results/plots/b1.scores.pdf",
+        plot = "results/plots/b1.scores.png",
     params:
-        cutoff1 = 71.572528,
-        cutoff2 = 30.589559,
+        cutoff1 = 43.14256,
+        cutoff2 = 18.62207,
     shell:
         """
         Rscript workflow/scripts/manhattan.R {input.scores} {output.plot} {params.cutoff1} {params.cutoff2}

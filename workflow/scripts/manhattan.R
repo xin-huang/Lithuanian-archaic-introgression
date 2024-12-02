@@ -22,6 +22,6 @@ library(qqman)
 
 args <- commandArgs(trailingOnly = TRUE)
 data <- read.table(args[1], header=TRUE)
-pdf(args[2], width = 8, height = 6)
-manhattan(data, p="B1", col=c("blue", "orange"), logp=FALSE, genomewideline=as.numeric(args[3]), suggestiveline=as.numeric(args[4]), main="Lithuanian", ylab="B1 score")
+png(args[2], width=800, height=600, res=96)
+manhattan(data, p="B1", col=c("blue", "orange"), logp=FALSE, genomewideline=as.numeric(args[3]), suggestiveline=as.numeric(args[4]), main="Lithuanian", ylab=expression(beta^{(1)} ~ "scores"), ylim=c(0,50))
 dev.off()
