@@ -7,7 +7,6 @@ resources/tools/BetaScan
 resources/tools/genomatnn
 resources/tools/maladapt/pretrained_models/*.sav
 resources/flags
-resources/repeats/*.bed
 results
 *.out
 *.sh

@@ -29,7 +29,7 @@ rule test_hwe:
         awk '$7>$8' results/processed_data/Lithuanians/lit.chr6.imputed.biallelic.snps.hwe | \
         sed '1d' | \
         awk '$9<0.001{{print $2}}' | \
-        awk -F ":" '{{print $1"\\t"$2}}' > {output.hwe_outliers}
+        awk -F ":" '{{print $1"\\t"$2-1"\\t"$2}}' > {output.hwe_outliers}
         """
 
 
@@ -72,5 +72,26 @@ rule estimate_b1:
         scores = "results/betascan/lit.chr6.imputed.biallelic.snps.b1.scores",
     shell:
         """
-        python resources/tools/BetaScan/BetaScan.py -i {input.ac} -m .15 | grep -v Position | awk -v chr=6 '{{print chr"\\t"$0}}' | awk '{{print $1":"$2"\\t"$1"\\t"$2"\\t"$3}}' | sed '1iSNP\\tCHR\\tBP\\tB1'> {output.scores}
+        python resources/tools/BetaScan/BetaScan.py -i {input.ac} -m .15 -fold | grep -v Position | awk -v chr=6 '{{print chr"\\t"$0}}' | awk '{{print $1":"$2"\\t"$1"\\t"$2"\\t"$3}}' | sed '1iSNP\\tCHR\\tBP\\tB1'> {output.scores}
+        """
+
+
+rule b1_summary:
+    input:
+        scores = rules.estimate_b1.output.scores,
+    output:
+        summary = "results/betascan/lit.chr6.imputed.biallelic.snps.b1.scores.summary",
+    shell:
+        """
+        set +o pipefail
+        echo "#top 0.05% cutoff" > {output.summary}
+        sed '1d' {input.scores} | sort -rnk 4,4 | head -55 | tail -1 >> {output.summary}
+        echo "#top 1% cutoff" >> {output.summary}
+        sed '1d' {input.scores} | sort -rnk 4,4 | head -1111 | tail -1 >> {output.summary}
+        echo "#HLA-B; HLA-C highest score" >> {output.summary}
+        awk '$3>=31198205&&$3<=31348022' {input.scores} | sort -rnk 4,4 | head -1 >> {output.summary}
+        echo "#HLA-DQA1; HLA-DQB1 highest score" >> {output.summary}
+        awk '$3>=32598042&&$3<=32644388' {input.scores} | sort -rnk 4,4 | head -1 >> {output.summary}
+        echo "#HLA-DQA2; HLA-DQB2 highest score" >> {output.summary}
+        awk '$3>=32698044&&$3<=32748039' {input.scores} | sort -rnk 4,4 | head -1 >> {output.summary}
         """
