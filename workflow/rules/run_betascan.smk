@@ -33,31 +33,48 @@ rule test_hwe:
         """
 
 
+rule convert_repeat_files:
+    input:
+        rmsk = "resources/repeats/hg19.rmsk.tsv",
+        segdup = "resources/repeats/hg19.seg.dups.tsv",
+        simrep = "resources/repeats/hg19.simple.repeats.tsv",
+    output:
+        rmsk = "results/processed_data/repeats/hg19.rmsk.autosomes.bed",
+        segdup = "results/processed_data/repeats/hg19.seg.dups.autosomes.bed",
+        simrep = "results/processed_data/repeats/hg19.simple.repeats.autosomes.bed",
+    shell:
+        """
+        sed '1d' {input.rmsk} | awk 'BEGIN{{OFS="\\t"}}$6!~/chr(X|Y|Un|M|[0-9]_|[0-9][0-9]_)/{{print $6,$7,$8,$11,$2,$10}}' | sed 's/^chr//' | sort -k1,1n -k2,2n -k3,3n > {output.rmsk}
+        sed '1d' {input.segdup} | awk 'BEGIN{{OFS="\\t"}}$2!~/chr(X|Y|Un|M|[0-9]_|[0-9][0-9]_)/{{print $2,$3,$4,$5,$6,$7}}' | sed 's/^chr//' | sort -k1,1n -k2,2n -k3,3n > {output.segdup}
+        sed '1d' {input.simrep} | awk 'BEGIN{{OFS="\\t"}}$2!~/chr(X|Y|Un|M|[0-9]_|[0-9][0-9]_)/{{print $2,$3,$4,$5,$11}}' | sed 's/^chr//' | sort -k1,1n -k2,2n -k3,3n > {output.simrep}
+        """
+
+
 rule get_allele_counts:
     input:
         vcf = rules.extract_biallelic_snps.output.vcf,
         hwe_outliers = rules.test_hwe.output.hwe_outliers,
+        rmsk = rules.convert_repeat_files.output.rmsk,
+        segdup = rules.convert_repeat_files.output.segdup,
+        simrep = rules.convert_repeat_files.output.simrep,
     output:
         ac = "results/betascan/lit.chr6.imputed.biallelic.snps.ac",
     params:
         maf1 = 100*0.05,
         maf2 = 100*0.95,
-        rmsk = "resources/repeats/hg19.rmsk.autosomes.bed",
-        simple_repeats = "resources/repeats/hg19.simple.repeats.autosomes.bed",
-        seg_dups = "resources/repeats/hg19.seg.dups.autosomes.bed",
     shell:
         """
         if [ -s {input.hwe_outliers} ]; then \
-            bcftools view -T ^{params.rmsk} {input.vcf} | \
-            bcftools view -T ^{params.simple_repeats} | \
-            bcftools view -T ^{params.seg_dups} | \
+            bcftools view -T ^{input.rmsk} {input.vcf} | \
+            bcftools view -T ^{input.simrep} | \
+            bcftools view -T ^{input.segdup} | \
             bcftools view -T ^{input.hwe_outliers} | \
             bcftools query -f "%POS\\t%INFO/AC\\t%INFO/AN\\n" | \
             awk '($2>{params.maf1})&&($2<{params.maf2})' > {output.ac}; \
         else \
-            bcftools view -T ^{params.rmsk} {input.vcf} | \
-            bcftools view -T ^{params.simple_repeats} | \
-            bcftools view -T ^{params.seg_dups} | \
+            bcftools view -T ^{input.rmsk} {input.vcf} | \
+            bcftools view -T ^{input.simrep} | \
+            bcftools view -T ^{input.segdup} | \
             bcftools query -f "%POS\\t%INFO/AC\\t%INFO/AN\\n" | \
             awk '($2>{params.maf1})&&($2<{params.maf2})' > {output.ac}; \
         fi
