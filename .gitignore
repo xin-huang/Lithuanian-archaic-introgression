@@ -1,0 +1,13 @@
+.snakemake
+logs
+logs_slurm
+resources/data
+resources/tools/beagle
+resources/tools/BetaScan
+resources/tools/genomatnn
+resources/tools/maladapt/pretrained_models/*.sav
+resources/flags
+results
+*.gz
+*.out
+*.sh
