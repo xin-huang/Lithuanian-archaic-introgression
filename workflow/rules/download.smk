@@ -83,7 +83,7 @@ rule download_repeats:
         """
         wget -c https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/rmsk.txt.gz -O {output.rmsk}
         wget -c https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/genomicSuperDups.txt.gz -O {output.segdup}
-        wget -c https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/simpleRepeat.txt.gz -O {output.simrep}
+        wget -c https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/simpleRepeat.txt.gz -O {output.simrep}
         """
 
 
